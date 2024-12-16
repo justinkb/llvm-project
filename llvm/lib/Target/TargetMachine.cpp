@@ -270,7 +270,7 @@ MCSymbol *TargetMachine::getSymbol(const GlobalValue *GV) const {
   if (MCSymbol *TargetSymbol = TLOF->getTargetSymbol(GV, *this))
     return TargetSymbol;
 
-  SmallString<128> NameStr;
+  SmallString<256> NameStr;
   getNameWithPrefix(NameStr, GV, TLOF->getMangler());
   return TLOF->getContext().getOrCreateSymbol(NameStr);
 }
