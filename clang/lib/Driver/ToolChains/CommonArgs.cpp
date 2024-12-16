@@ -2914,7 +2914,7 @@ void tools::addHIPRuntimeLibArgs(const ToolChain &TC, Compilation &C,
 void tools::addOffloadCompressArgs(const llvm::opt::ArgList &TCArgs,
                                    llvm::opt::ArgStringList &CmdArgs) {
   if (TCArgs.hasFlag(options::OPT_offload_compress,
-                     options::OPT_no_offload_compress, false))
+                     options::OPT_no_offload_compress, true))
     CmdArgs.push_back("-compress");
   if (TCArgs.hasArg(options::OPT_v))
     CmdArgs.push_back("-verbose");
