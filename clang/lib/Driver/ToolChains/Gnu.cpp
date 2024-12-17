@@ -3394,29 +3394,33 @@ bool Generic_GCC::addLibStdCXXIncludePaths(Twine IncludeDir, StringRef Triple,
   if (!getVFS().exists(IncludeDir))
     return false;
 
+  SmallString<260> CanonicalIncludeDir;
+  if (getVFS().getRealPath(IncludeDir, CanonicalIncludeDir))
+    return false;
+
   // Debian native gcc uses g++-multiarch-incdir.diff which uses
   // include/x86_64-linux-gnu/c++/10$IncludeSuffix instead of
   // include/c++/10/x86_64-linux-gnu$IncludeSuffix.
-  std::string Dir = IncludeDir.str();
   StringRef Include =
-      llvm::sys::path::parent_path(llvm::sys::path::parent_path(Dir));
+      llvm::sys::path::parent_path(llvm::sys::path::parent_path(CanonicalIncludeDir));
   std::string Path =
-      (Include + "/" + Triple + Dir.substr(Include.size()) + IncludeSuffix)
+      (Include + "/" + Triple + CanonicalIncludeDir.substr(Include.size()) + IncludeSuffix)
           .str();
   if (DetectDebian && !getVFS().exists(Path))
     return false;
 
   // GPLUSPLUS_INCLUDE_DIR
-  addSystemInclude(DriverArgs, CC1Args, IncludeDir);
+  addSystemInclude(DriverArgs, CC1Args, CanonicalIncludeDir);
   // GPLUSPLUS_TOOL_INCLUDE_DIR. If Triple is not empty, add a target-dependent
   // include directory.
   if (DetectDebian)
     addSystemInclude(DriverArgs, CC1Args, Path);
   else if (!Triple.empty())
     addSystemInclude(DriverArgs, CC1Args,
-                     IncludeDir + "/" + Triple + IncludeSuffix);
+                     CanonicalIncludeDir + "/" + Triple + IncludeSuffix);
   // GPLUSPLUS_BACKWARD_INCLUDE_DIR
-  addSystemInclude(DriverArgs, CC1Args, IncludeDir + "/backward");
+  if (getVFS().exists(CanonicalIncludeDir + "/backward"))
+    addSystemInclude(DriverArgs, CC1Args, CanonicalIncludeDir + "/backward");
   return true;
 }
 
